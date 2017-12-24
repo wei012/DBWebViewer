@@ -2,4 +2,4 @@
 
 Jsgrid example.
 
-Basi filter.
+Basic filter.
