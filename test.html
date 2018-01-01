@@ -2,7 +2,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>My Test</title>  
+    <title>Info Table</title>  
 	
 	<link rel="stylesheet" type="text/css" href="./jsgrid/jsgrid.min.css" />
     <link rel="stylesheet" type="text/css" href="./jsgrid/jsgrid-theme.min.css" />
@@ -19,6 +19,7 @@
 	  var dbData = {
 
         loadData: function(filter) {
+			/*
             return $.grep(this.clients, function(client) {
                 return (!filter.Name || client.Name.indexOf(filter.Name) > -1)
                     && (!filter.Age || client.Age === filter.Age)
@@ -26,6 +27,14 @@
                     && (!filter.Country || client.Country === filter.Country)
                     && (filter.Married === undefined || client.Married === filter.Married);
             });
+			*/
+			
+			return $.ajax({
+					type: "GET",
+					url: "http://127.0.0.1/items",
+					data: filter
+				});
+    
         },
 
         insertItem: function(insertingClient) {
@@ -49,86 +58,7 @@
         { Name: "Brazil", Id: 5 },
         { Name: "China", Id: 6 },
         { Name: "Russia", Id: 7 }
-    ];
-
-    dbData.clients = [
-        {
-            "Name": "Otto Clay",
-            "Age": 61,
-            "Country": 6,
-            "Address": "Ap #897-1459 Quam Avenue",
-            "Married": false
-        },
-        {
-            "Name": "Connor Johnston",
-            "Age": 73,
-            "Country": 7,
-            "Address": "Ap #370-4647 Dis Av.",
-            "Married": false
-        },
-        {
-            "Name": "Lacey Hess",
-            "Age": 29,
-            "Country": 7,
-            "Address": "Ap #365-8835 Integer St.",
-            "Married": false
-        },
-        {
-            "Name": "Timothy Henson",
-            "Age": 78,
-            "Country": 1,
-            "Address": "911-5143 Luctus Ave",
-            "Married": false
-        },
-        {
-            "Name": "Ramona Benton",
-            "Age": 43,
-            "Country": 5,
-            "Address": "Ap #614-689 Vehicula Street",
-            "Married": true
-        },
-        {
-            "Name": "Carter Clarke",
-            "Age": 59,
-            "Country": 6,
-            "Address": "Ap #547-2921 A Street",
-            "Married": false
-        }
-    ];
-
-    dbData.users = [
-        {
-            "ID": "x",
-            "Account": "A758A693-0302-03D1-AE53-EEFE22855556",
-            "Name": "Carson Kelley",
-            "RegisterDate": "2002-04-20T22:55:52-07:00"
-        },
-        {
-            "Account": "D89FF524-1233-0CE7-C9E1-56EFF017A321",
-            "Name": "Prescott Griffin",
-            "RegisterDate": "2011-02-22T05:59:55-08:00"
-        },
-        {
-            "Account": "06FAAD9A-5114-08F6-D60C-961B2528B4F0",
-            "Name": "Amir Saunders",
-            "RegisterDate": "2014-08-13T09:17:49-07:00"
-        },
-        {
-            "Account": "EED7653D-7DD9-A722-64A8-36A55ECDBE77",
-            "Name": "Derek Thornton",
-            "RegisterDate": "2012-02-27T01:31:07-08:00"
-        },
-        {
-            "Account": "2A2E6D40-FEBD-C643-A751-9AB4CAF1E2F6",
-            "Name": "Fletcher Romero",
-            "RegisterDate": "2010-06-25T15:49:54-07:00"
-        },
-        {
-            "Account": "B8DA1912-20A0-FB6E-0031-5F88FD63EF90",
-            "Name": "Solomon Green",
-            "RegisterDate": "2013-09-04T01:44:47-07:00"
-        }
-     ];
+    ];   
  
     $("#TTT").text("OK");
     $("#jsGrid").jsGrid({
