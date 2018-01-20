@@ -4,26 +4,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Grid Display</title>  
 	
-	<link rel="stylesheet" type="text/css" href="./jsgrid/jsgrid.min.css" />
-    <link rel="stylesheet" type="text/css" href="./jsgrid/jsgrid-theme.min.css" />
-	
-	<link rel="stylesheet" href="./jquery/ui/1.11.2/themes/cupertino/jquery-ui.css">
-    <script src="./jquery/jquery-1.10.2.js"></script>
-    <script src="./jquery/ui/1.11.2/jquery-ui.js"></script>
-    <script src="./jquery/jquery.validate-1.9.min.js"></script>
-    <script src="./jsgrid/jsgrid.min.js"></script>
-    <script src="./jsgrid/i18n/jsgrid-zh-cn.js"></script>
+	<link rel="stylesheet" type="text/css" href="/jsgrid/jsgrid.min.css" />
+    <link rel="stylesheet" type="text/css" href="/jsgrid/jsgrid-theme.min.css" />
+	<link rel="stylesheet" type="text/css" href="/css/MyJsgrid.css" />	
+	<link rel="stylesheet" href="/jquery/ui/1.11.2/themes/cupertino/jquery-ui.css">
+    <script src="/jquery/jquery-1.10.2.js"></script>
+    <script src="/jquery/ui/1.11.2/jquery-ui.js"></script>
+    <script src="/jquery/jquery.validate-1.9.min.js"></script>
+    <script src="/jsgrid/jsgrid.min.js"></script>
+    <script src="/jsgrid/i18n/jsgrid-zh-cn.js"></script>
   
 	<script>
 	  $(document).ready(function(){
-	    var dataUrl =  "http://127.0.0.1/";
-		var pageSize = 3;
+	    var dataUrl =  window.location.pathname;
+		var pageSize = 10;
 		var pageButtonNum = 5;
 	    var dbData = {
              loadData: function(filter) {			
 	     		return $.ajax({
 	     				type: "GET",
-	     				url: dataUrl + "items", 
+	     				url: dataUrl + "/items", 
 	     				data: filter
 	     			});
              },         
@@ -36,10 +36,11 @@
                  this.clients.splice(clientIndex, 1);
              }
          };
-		 
+		
+		$("#jsGrid").hide();		
 		$("#jsGrid").jsGrid({
                             width: "100%",
-                            height: "400px",
+                            height: "500px",
                            
                             filtering: true,
                             editing: false,
@@ -52,11 +53,11 @@
                             pageButtonCount: pageButtonNum,                           
                             controller: dbData,   
         });
-		$("#jsGrid").hide();
+		
 	    
 		$.ajax({
             dataType: "json",
-			url: dataUrl + "schema", 
+			url: dataUrl + "/schema", 
          }) 
 		 .done(function(result) {
 				$("#jsGrid").jsGrid("option", "fields", result);  
