@@ -1,0 +1,11 @@
+{	
+	"DBServer" : "127.0.0.1",
+	"MaxOutNum" : 100,
+	"WebPort" : "80",
+	"DB": {
+		    "TestDB": {  
+				"Table1": { "Hides": "_id,Note", "Alias":""},				
+				"Table2": { "Hides": "_id,Field2", "Alias":""}
+			}	
+	}	
+}
