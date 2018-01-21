@@ -6,143 +6,26 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"reflect"
-	"sort"
-	"strconv"
 	"strings"
 
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"./common"
+	db "./dblayer"
 )
 
-//Field is the struct of data
-type Field struct {
-	Type  string
-	Alias string
-	Hide  bool
-}
-
-// WebConf is the configuration for the web server
-type WebConf struct {
-	DBServer  string
-	MaxOutNum int
-	WebPort   string
-	DB        map[string]map[string]map[string]string
-}
-
 // DicFields is the detailed schema information for each table
-var DicFields map[string]map[string]map[string]Field
+var DicFields util.DBFields
 
 // DicWebConfs is the detailed configuration of each field
-var DicWebConfs WebConf
-
-func getHeaderStr(dbName string, tableName string) string {
-	record := DicFields[dbName][tableName]
-	data := ""
-	dicHides, orders := getDisplayColumns(dbName, tableName)
-
-	dicOrders := make(map[string]bool)
-	for _, v := range orders {
-		dicOrders[v] = true
-	}
-
-	dicExist := make(map[string]bool)
-	var strs []string
-	for k := range record {
-		if _, has := dicOrders[k]; !has {
-			strs = append(strs, k)
-		} else {
-			dicExist[k] = true
-		}
-	}
-
-	var headers []string
-	for _, v := range orders {
-		if _, has := dicExist[v]; has {
-			headers = append(headers, v)
-		}
-	}
-
-	sort.Strings(strs)
-	headers = append(headers, strs...)
-	for _, k := range headers {
-		if _, has := dicHides[k]; !has {
-			data += `{ "name": "` + k + `", "type": "text" },`
-		}
-	}
-	if len(data) > 0 {
-		data = data[0 : len(data)-1]
-	}
-	return "[" + data + "]"
-}
+var DicWebConfs util.WebConf
 
 func getSchema(dbName string, tableName string, w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK)
-	data := getHeaderStr(dbName, tableName)
+	data := util.GetHeaderStr(dbName, tableName, DicFields[dbName][tableName], DicWebConfs)
 	w.Header().Set("Content-Length", fmt.Sprint(len(data)))
 	fmt.Fprint(w, string(data))
-}
-
-//Load the information of fields to hide
-func getDisplayColumns(dbName string, tableName string) (map[string]bool, []string) {
-	dicHide := make(map[string]bool)
-	var orders []string
-	if db, hasDB := DicWebConfs.DB[dbName]; hasDB {
-		if tab, hasTab := db[tableName]; hasTab {
-			parts := strings.Split(tab["Hides"], ",")
-			for _, s := range parts {
-				if len(s) > 0 {
-					dicHide[s] = true
-				}
-			}
-			orders = strings.Split(tab["Orders"], ",")
-		}
-	}
-
-	return dicHide, orders
-}
-
-func getItemsStr(dbName string, tableName string, fields map[string][]string) string {
-	session, err := mgo.Dial(DicWebConfs.DBServer)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB(dbName).C(tableName)
-
-	columns := bson.M{}
-	filter := bson.M{}
-
-	dicHides, _ := getDisplayColumns(dbName, tableName)
-	for k, v := range fields {
-		if len(v) > 0 && len(v[0]) > 0 {
-			if DicFields[dbName][tableName][k].Type == "int" {
-				filter[k], _ = strconv.Atoi(v[0])
-			} else {
-				filter[k] = v[0]
-			}
-		}
-
-		if _, has := dicHides[k]; !has {
-			columns[k] = 1
-		}
-	}
-
-	var records []bson.M
-	err = c.Find(filter).Select(columns).Limit(DicWebConfs.MaxOutNum).All(&records)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if len(records) == 0 {
-		return "[]"
-	}
-	data, _ := json.Marshal(records)
-	return string(data)
 }
 
 func getItems(dbName string, tableName string, w http.ResponseWriter, r *http.Request) {
@@ -150,38 +33,11 @@ func getItems(dbName string, tableName string, w http.ResponseWriter, r *http.Re
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK)
-	data := getItemsStr(dbName, tableName, r.URL.Query())
+
+	dicHides, _ := util.GetDisplayColumns(dbName, tableName, DicWebConfs)
+	data := db.GetItemsStr(dbName, tableName, r.URL.Query(), dicHides, DicWebConfs, DicFields)
 	w.Header().Set("Content-Length", fmt.Sprint(len(data)))
 	fmt.Fprint(w, data)
-}
-
-func loadTab(dbName string, tableName string) {
-	session, err := mgo.Dial(DicWebConfs.DBServer)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB(dbName).C(tableName)
-
-	var record bson.M
-	err = c.Find(nil).One(&record)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, exist := DicFields[dbName]; !exist {
-		DicFields[dbName] = make(map[string]map[string]Field)
-	}
-
-	if _, exist := DicFields[dbName][tableName]; !exist {
-		DicFields[dbName][tableName] = make(map[string]Field)
-	}
-
-	for k, v := range record {
-		DicFields[dbName][tableName][k] = Field{Type: reflect.TypeOf(v).String()}
-	}
 }
 
 func callAPI(paras []string, w http.ResponseWriter, r *http.Request) {
@@ -192,7 +48,7 @@ func callAPI(paras []string, w http.ResponseWriter, r *http.Request) {
 
 	dbName := paras[0]
 	tableName := paras[1]
-	loadTab(dbName, tableName)
+	db.LoadTab(dbName, tableName, DicWebConfs, DicFields)
 	if num == 2 {
 		http.ServeFile(w, r, "./static/grid.html")
 	} else if num == 3 && paras[2] == "items" {
@@ -203,7 +59,6 @@ func callAPI(paras []string, w http.ResponseWriter, r *http.Request) {
 }
 
 func dispatch(w http.ResponseWriter, r *http.Request) {
-
 	parts := strings.Split(r.URL.Path, "/")
 	num := len(parts)
 
@@ -228,12 +83,11 @@ func loadConf() bool {
 		return false
 	}
 
-	DicFields = make(map[string]map[string]map[string]Field)
+	DicFields = make(map[string]map[string]map[string]util.Field)
 	return true
 }
 
 func main() {
-
 	fmt.Println("Loading configuration...")
 	if !loadConf() {
 		fmt.Println("Failed to load configuration information!")
