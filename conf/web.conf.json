@@ -5,7 +5,7 @@
 	"DB": {
 		    "TestDB": {  
 				"Table1": { "Hides": "_id,Note", "Alias":""},				
-				"Table2": { "Hides": "_id", "Alias":""}
+				"Table2": { "Hides": "_id,Date", "Alias":""}
 			}	
 	}	
 }
