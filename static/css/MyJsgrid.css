@@ -8,6 +8,7 @@
     position: relative;
     overflow: hidden;
     font-size: 12px !important;	
+	
 }
 
 
@@ -17,4 +18,9 @@
 
 .jsgrid-header-row .jsgrid-header-cell {
     font-size: 12px !important;	
+}
+
+.jsgrid input{
+	height: 20px;
+    font-size: 12px;	
 }
