@@ -1,7 +1,12 @@
 # MyJsgrid
 
-Jsgrid example.
+Using Jsgrid to dispay table informations.
 
-Basic filter.
+1. Support the basic filter.
+2. Support MongoDB
 
-Need get data from API.
+TODO:
+
+1. Support more DB and plain Json/XML files.
+2. Refactor the code and improve the performance
+3. More documents
