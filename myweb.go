@@ -204,11 +204,10 @@ func main() {
 
 	fmt.Println("Loading configuration...")
 	if !loadConf() {
-		fmt.Println("Failed to load configuration file")
+		fmt.Println("Failed to load configuration information!")
 		return
 	}
 	fmt.Println("Starting server...")
 	http.HandleFunc("/", dispatch)
 	log.Fatal(http.ListenAndServe(":"+DicWebConfs.WebPort, nil))
-
 }
