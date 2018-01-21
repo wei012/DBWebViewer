@@ -3,13 +3,9 @@
 	"MaxOutNum" : 100,
 	"WebPort" : "80",
 	"DB": {
-		    "HumanInfo": {  
-				"Hotel": { 
-				           "Hides": "_id,id,Descriot,District5,District6,CAddress,CTel,CZip,Zip", 
-				           "Orders": "Name,CtfId,Company,Gender,Birthday,Nation,Tel,Address,District4,Version"
-						 },
-				"QunInfo": { "Hides": "_id,Id", "Orders":"QunNum,Title,QunText,CreateDate"},
-				"QunMember": { "Hides": "_id,ID", "Orders":"QQNum,Nick,Age,Gender,QunNum"}
+		    "TestDB": {  
+				"Table1": { "Hides": "_id,Note", "Orders":"Name,Age"},				
+				"Table2": { "Hides": "_id,Field2", "Orders":"Type,Flag"}
 			}	
 	}	
 }

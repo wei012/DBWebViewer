@@ -58,6 +58,7 @@ func callAPI(paras []string, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//dispatch the diffrent requests
 func dispatch(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	num := len(parts)
