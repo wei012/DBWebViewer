@@ -24,3 +24,10 @@
 	height: 20px;
     font-size: 12px;	
 }
+
+.table-title{
+	font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0px 10px 0px;
+}

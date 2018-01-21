@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -38,8 +39,33 @@ var DicWebConfs WebConf
 func getHeaderStr(dbName string, tableName string) string {
 	record := DicFields[dbName][tableName]
 	data := ""
-	dicHides := getDisplayColumns(dbName, tableName)
+	dicHides, orders := getDisplayColumns(dbName, tableName)
+
+	dicOrders := make(map[string]bool)
+	for _, v := range orders {
+		dicOrders[v] = true
+	}
+
+	dicExist := make(map[string]bool)
+	var strs []string
 	for k := range record {
+		if _, has := dicOrders[k]; !has {
+			strs = append(strs, k)
+		} else {
+			dicExist[k] = true
+		}
+	}
+
+	var headers []string
+	for _, v := range orders {
+		if _, has := dicExist[v]; has {
+			headers = append(headers, v)
+		}
+	}
+
+	sort.Strings(strs)
+	headers = append(headers, strs...)
+	for _, k := range headers {
 		if _, has := dicHides[k]; !has {
 			data += `{ "name": "` + k + `", "type": "text" },`
 		}
@@ -61,8 +87,9 @@ func getSchema(dbName string, tableName string, w http.ResponseWriter, r *http.R
 }
 
 //Load the information of fields to hide
-func getDisplayColumns(dbName string, tableName string) map[string]bool {
+func getDisplayColumns(dbName string, tableName string) (map[string]bool, []string) {
 	dicHide := make(map[string]bool)
+	var orders []string
 	if db, hasDB := DicWebConfs.DB[dbName]; hasDB {
 		if tab, hasTab := db[tableName]; hasTab {
 			parts := strings.Split(tab["Hides"], ",")
@@ -71,9 +98,11 @@ func getDisplayColumns(dbName string, tableName string) map[string]bool {
 					dicHide[s] = true
 				}
 			}
+			orders = strings.Split(tab["Orders"], ",")
 		}
 	}
-	return dicHide
+
+	return dicHide, orders
 }
 
 func getItemsStr(dbName string, tableName string, fields map[string][]string) string {
@@ -89,7 +118,7 @@ func getItemsStr(dbName string, tableName string, fields map[string][]string) st
 	columns := bson.M{}
 	filter := bson.M{}
 
-	dicHides := getDisplayColumns(dbName, tableName)
+	dicHides, _ := getDisplayColumns(dbName, tableName)
 	for k, v := range fields {
 		if len(v) > 0 && len(v[0]) > 0 {
 			if DicFields[dbName][tableName][k].Type == "int" {
@@ -108,6 +137,9 @@ func getItemsStr(dbName string, tableName string, fields map[string][]string) st
 	err = c.Find(filter).Select(columns).Limit(DicWebConfs.MaxOutNum).All(&records)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if len(records) == 0 {
+		return "[]"
 	}
 	data, _ := json.Marshal(records)
 	return string(data)
